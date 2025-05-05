@@ -1,0 +1,54 @@
+//version Buena
+
+#include "BluetoothSerial.h"
+
+String prefijo = "AgroWeight-";
+String puesto = "00004863PP";
+
+String lectura = "";
+
+#define RXD2 16
+#define TXD2 17
+
+BluetoothSerial SerialBT;
+
+String command = "";
+
+void setup() {
+
+  Serial.begin(115200);
+  String nombre = prefijo+puesto;
+  char nombreDispositivo[50];
+  nombre.toCharArray(nombreDispositivo, 50);
+  SerialBT.begin(nombre);
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  delay(2500);  
+  //INIT DEF
+  Serial2.write("\u000200FFE10100000\u0003\r\n");
+  //INIT SENDING
+  Serial2.write("\u000200FFE10110000\u0003\r\n");
+  //PUT ZERO
+  Serial2.write("\u000200FFE01050000\u0003\r\n");
+  
+}
+
+void loop() {
+  if (Serial2.available() > 0) {
+    char read = char(Serial2.read());
+    if(read == '\u0002'){
+      lectura = "";
+    }
+    else if(read == '\u0003'){
+      //validateWeight(lectura);
+      String peso = lectura.substring(12,20);
+      peso.trim();
+      //delay(100);
+      Serial.println("I" + peso + "g");
+      SerialBT.print("I" + peso + "g");
+    }
+    else{
+      lectura = lectura + String(read);
+    }
+  }
+}
+
